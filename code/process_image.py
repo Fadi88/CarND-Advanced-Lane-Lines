@@ -106,13 +106,13 @@ def handle_undistored_image(img):
 	x_right_bot += x_right_bot_corr
 	x_right_top += x_right_top_corr
 
-	'''
+	
 	#test code
 	#test on straight line image where the lines are straight , aims was to get the points on the lane line
 	src = np.array( [ [x_left_top,y_top] , [x_right_top,y_top] , [x_right_bot,y_bot] , [x_left_bot,y_bot] ] , np.int32).reshape((-1,1,2))
 	tmp = cv2.polylines(img_undist , src, isClosed = True , thickness = 10 ,color = (0,200,100))
 	cv2.imwrite(img_file.replace("test_images/" , "output_images/pol_") , tmp)
-	'''
+	
 
 	src = np.float32( [ [x_left_top,y_top] , [x_right_top,y_top] , [x_right_bot,y_bot] , [x_left_bot,y_bot] ] ) 
 
@@ -286,8 +286,6 @@ for img_file in img_glob:
 	img = cv2.imread(img_file)
 	img_undist = cv2.undistort(img , mtx , dist , None , None)
 
-	#cv2.imwrite( img_file.replace("test_images/" , "output_images/boxed_") , handle_undistored_image(img_undist))
+	cv2.imwrite( img_file.replace("test_images/" , "output_images/boxed_") , handle_undistored_image(img_undist))
 	
-	
-
 
