@@ -21,6 +21,8 @@ The goals / steps of this project are the following:
 [image6]: ./examples/example_output.jpg "Output"
 [image7]: ./camera_cal/calibration3.jpg "Distored image"
 [image8]: ./camera_cal_output/calibration3.jpg "Undisoted image"
+[image9]: ./output_images/binary_test3.jpg "Binary image"
+[image10]: ./output_images/binary_test3.jpg "straight lines"
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -47,62 +49,64 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+#### 1. correct distoartion of images 
+in the code "code/process_image.py" (line 277-280) the pickle where the distortion matrix was calucated is opened and loaded 
+then applied to every image (line 287) imported by the glob object in a a for loop (line 285)
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+#### 2. apply color transforms and  gradients to create a thresholded binary image.
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+the main function to proccess an image "handle_undistored_image" is called (line 289)
+in this function a binary image is obtained by applying sobel opertor in X direction (line 65)
+and also in Y direction (line 69)
+color threshold (line 72) which is done by both the V channel in HSV and the L channel in HLS and the output is the anded result of both filter.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+the final binary image is obtained when the gradient in X and Y direction (both) are in the detection threshold -gradient condtion- or if it was deteced by the color masking 
 
-![alt text][image3]
+the final output binary is similar to this : 
+![alt text][image9] 
 
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+#### 3. perspective transform.
 
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-```
+in order to get the prespective transform the straight lane lines images were used 
+the startgey was to place (by trial and error) four corners on the lines forimg a Trapezoid and then map those to a rectangle and get the prespective matrix of that mapping and apply it to other images "code/process_image.py" (lines 84-125)
 
-This resulted in the following source and destination points:
+to validate this iamge was printed 
+![alt text][image10] TOBEDONE
 
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+#### 4.identifing lane-line pixels and fit the positions with a polynomial.
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+after the image was warped it was assumed that a big part of the unnedded infortion was droped due to the warpping things like the horizon lines , other cars and signs which lead to focus only on the potion of the road that contains the lane line like this image
+![alt text][image11] TOBEDONE
 
-![alt text][image4]
+how this was done was by taking a histogram of white points in the the lower half of the image ( the array indexing is only from the width//2) (line 133)
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+then the two histogram peaks for right center and left center are calcauted (line 137-138)
 
-![alt text][image5]
+after the center is obtained sliding window hapens for 9 window by dividing the image to 9 sections and doing the searchs in a for loop for each sections (line 159)
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+for every window if the number of point that are marked is more than a certain threshold "shift_thres" (line 179-182) the center is shifted to the center of those points 
 
-I did this in lines # through # in my code in `my_other_file.py`
+then all the found point for all the windows are appended in the same list (line 185-186)
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+after this for loop we now have two lists that have all the points that were in the slidings search windows that were used 
+those are passed to the numpy function fit to find the polyline that best fits those with the assumpation that a second degree line will fit them the best (line 196-197)
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
 
-![alt text][image6]
+#### 5. Calculating the radius of curvature of the lane and the position of the vehicle with respect to center.
+
+in the same file "code/process_image.py" (lines 261-262) using the equation provided to calucated the radius of curvuture and after making an assumption for the density for meter per pixel the esimated raduis of the road was calucated once for the fight curve and once for the left one and the output was the average of both of the obtained numbers 
+
+camera center was calcauted to be the center btween the right and left lane as seen in the code (line 265-266)
+
+#### 6. final output.
+
+the fnal return image was the input image with overlayed , warped image of the lanes in binary in the upper right corner , the inforation for the camera offest the center and the estimated road curvature on the top and an overlay to mark the detected lanes in green with mostly invisble red lines to mark the lanes line themsevles 
+
+also there was an output of the mask generated before and after the warping it back with the inverse transfom
+
+![alt text][image12] TOBEDONE
 
 ---
 
