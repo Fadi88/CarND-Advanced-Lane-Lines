@@ -23,6 +23,9 @@ The goals / steps of this project are the following:
 [image8]: ./camera_cal_output/calibration3.jpg "Undisoted image"
 [image9]: ./output_images/binary_test3.jpg "Binary image"
 [image10]: ./output_images/binary_test3.jpg "straight lines"
+[image11]: ./output_images/pol_test1.jpg "prespective transform source"
+[image12]: ./output_images/warped_test3.jpg "warped binary lines"
+[image13]: ./output_images/boxed_test3.jpg "warped binary lines"
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
@@ -72,12 +75,12 @@ in order to get the prespective transform the straight lane lines images were us
 the startgey was to place (by trial and error) four corners on the lines forimg a Trapezoid and then map those to a rectangle and get the prespective matrix of that mapping and apply it to other images "code/process_image.py" (lines 84-125)
 
 to validate this iamge was printed 
-![alt text][image10] TOBEDONE
+![alt text][image11]
 
 #### 4.identifing lane-line pixels and fit the positions with a polynomial.
 
 after the image was warped it was assumed that a big part of the unnedded infortion was droped due to the warpping things like the horizon lines , other cars and signs which lead to focus only on the potion of the road that contains the lane line like this image
-![alt text][image11] TOBEDONE
+![alt text][image12]
 
 how this was done was by taking a histogram of white points in the the lower half of the image ( the array indexing is only from the width//2) (line 133)
 
@@ -106,7 +109,7 @@ the fnal return image was the input image with overlayed , warped image of the l
 
 also there was an output of the mask generated before and after the warping it back with the inverse transfom
 
-![alt text][image12] TOBEDONE
+![alt text][image13]
 
 ---
 
@@ -114,7 +117,7 @@ also there was an output of the mask generated before and after the warping it b
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./output_tracked.mp4)
 
 ---
 
@@ -122,4 +125,17 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+1- one of the major issues was to detect lane line with postions that are hard coded as improvmenet an dynamic way is needed to be used
+
+2- distance per pixel paramters used are not correct and also hard coded there is a need to create an estiamtor based on the a standard size objects 
+
+3-the whole pipeline is repeated for every frame this can be improved by doing it on the first frame and then detecting changes from that postions for consictuive ones 
+
+4-related to point 1 the bounds to the detection area need also to be dynamic in case of highly curved road 
+
+5- sometime it might be needed to fit more than a second degree curves for the lane lines in case of very sharp turns (related to point 4 too)
+
+6-the challenge video didn't work mainly because of object passing in front of the camera like motorcylce or other cars 
+and the also due to detecting the shadow of the serpator as a line (related to Tesla accident few back i guess)
+
+7- two tones asphalt road also throw the pipeline way of track 
